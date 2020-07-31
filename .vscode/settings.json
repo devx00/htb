@@ -1,4 +1,9 @@
 {
     "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true
+    "python.linting.pylintPath": "pylint",
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "yapf", // or "black" here
+    "python.linting.pylintEnabled": true,
+    "python.pythonPath": "/Users/zachhanson94/.local/share/virtualenvs/htb-KNhHVeyv/bin/python",
+    "python.formatting.yapfArgs": ["--recursive", "-i", "--style={based_on_style: pep8, indent_width: 4}"]
 }

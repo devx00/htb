@@ -1,1 +1,7 @@
 Recon/*
+api_docs/*
+**/.env
+tests/.*
+build/*
+dist/*
+htbapi.egg-info/*
