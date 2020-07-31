@@ -9,8 +9,6 @@ from htbapi.models import HTBProfile
 from htbapi.search import search
 
 
-
-
 def findprofiles(username: str) -> List[HTBProfile]:
     """Searches for profiles matchine :username:.
 
