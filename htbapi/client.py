@@ -11,13 +11,17 @@ ie. Use the htb.machines module when working with a Machine
 TODO: Improve exception handling. 
 TODO: Make more specific Exception types and messages.
 """
+from typing import Optional
 import requests
 from requests import Session, Request, Response
+from requests.models import PreparedRequest
 from urllib3.exceptions import InsecureRequestWarning
 import json
 
 
-from htbapi.exceptions import HTBException, HTBRequestException, HTBFurtherAuthRequired
+from .exceptions import HTBException
+from .exceptions import HTBRequestException
+from .exceptions import HTBFurtherAuthRequired
 
 BASEURL = "https://www.hackthebox.eu/api/v4"
 def disablesslwarnings():
@@ -63,12 +67,12 @@ class Client(Session):
             and not self.needsOTP
 
     @property
-    def accesstoken(self) -> str:
+    def accesstoken(self) -> Optional[str]:
         """The current access token for authentication"""
         return self._accesstoken
 
     @accesstoken.setter
-    def accesstoken(self, new: str):
+    def accesstoken(self, new: Optional[str]):
         """
         The setter for accesstoken. Makes sure to change
         the Authorization header when a new value is specified
@@ -97,14 +101,14 @@ class Client(Session):
         self.is2faEnabled = False
         self.tokenHas2FA = False
 
-    def send(self, request: Request, store=True, **kwargs) -> Response:
+    def send(self, request: PreparedRequest, store=True, **kwargs) -> Response:
         """
         Sends the prepared request that is stored in self._request
         and stores the response in self._response.
 
         Args:
             request: The prepared Request to send.
-            store: Optional; Whether to store the Request for future retry.
+            store: Whether to store the Request for future retry.
         Returns:
             The Response object.
         Raises:
@@ -158,7 +162,7 @@ class Client(Session):
         Args:
             email: The user's email to login with.
             password: The user's password.
-            ignore2fa: Optional; Whether to suppress HTBFurtherAuthRequired.
+            ignore2fa: Whether to suppress HTBFurtherAuthRequired.
         Raises:
             HTBFurtherAuthRequired: If 2FA is enabled and ignore2fa=False.
             HTBRequestException: If the request fails.
@@ -217,7 +221,7 @@ class Client(Session):
         check client.needsOTP and then call submit2fa manually if required.
         
         Args:
-            ignore2fa: Optional; Whether to suppress HTBFurtherAuthRequired.
+            ignore2fa: Whether to suppress HTBFurtherAuthRequired.
         Raises:
             HTBFurtherAuthRequired: If 2FA is enabled and ignore2fa=False. 
         """
@@ -278,3 +282,6 @@ class Client(Session):
         """
         if self._request is not None:
             return self.send(self._request)
+
+
+session = Client()

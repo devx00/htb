@@ -5,10 +5,15 @@ on HTB.
 """
 
 
-from htbapi.search import search
-from htbapi.models import HTBTeam
-from typing import List
+from . import session
+from .models import HTBObject
+from typing import List, Optional
+import json
 
+
+class HTBTeam(HTBObject):
+    """A team on HTB"""
+    pass
 
 def findteams(name: str) -> List[HTBTeam]:
     """Searches for teams matching :name.
@@ -20,11 +25,15 @@ def findteams(name: str) -> List[HTBTeam]:
     Returns:
         A list of matching teams.
     """
-    searchresults = search(name, tags=["teams"])
-    matches = searchresults["teams"] if "teams" in searchresults else []
+    resp = session.get(
+        "/search/fetch", 
+        params={"query": name, "tags": json.dumps(["teams"])})
+    results = resp.json()
+    searchresults = results["teams"] if "teams" in results else []
+    matches = [HTBTeam(res) for res in searchresults]
     return matches
 
-def findteam(name: str) -> HTBTeam:
+def findteam(name: str) -> Optional[HTBTeam]:
     """Finds a specific team by name.
 
     Searches HTB for a specific team matching the specified name

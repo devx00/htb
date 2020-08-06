@@ -7,6 +7,9 @@ verify_ssl = true
 yapf = "*"
 pylint = "*"
 python-dotenv = "*"
+tox = "*"
+sphinx = "*"
+sphinx-autodoc-typehints = "*"
 
 [packages]
 requests = "*"

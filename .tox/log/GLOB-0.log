@@ -1,0 +1,62 @@
+action: GLOB, msg: packaging
+cwd: /Users/zachhanson94/Development/htb
+cmd: /Users/zachhanson94/.local/share/virtualenvs/htb-KNhHVeyv/bin/python3.7 setup.py sdist --formats=zip --dist-dir .tox/dist
+running sdist
+running egg_info
+writing htbapi.egg-info/PKG-INFO
+writing dependency_links to htbapi.egg-info/dependency_links.txt
+writing requirements to htbapi.egg-info/requires.txt
+writing top-level names to htbapi.egg-info/top_level.txt
+reading manifest file 'htbapi.egg-info/SOURCES.txt'
+writing manifest file 'htbapi.egg-info/SOURCES.txt'
+running check
+creating htbapi-0.1.0
+creating htbapi-0.1.0/htbapi
+creating htbapi-0.1.0/htbapi.egg-info
+copying files to htbapi-0.1.0...
+copying README.md -> htbapi-0.1.0
+copying setup.py -> htbapi-0.1.0
+copying htbapi/__init__.py -> htbapi-0.1.0/htbapi
+copying htbapi/__version__.py -> htbapi-0.1.0/htbapi
+copying htbapi/challenges.py -> htbapi-0.1.0/htbapi
+copying htbapi/client.py -> htbapi-0.1.0/htbapi
+copying htbapi/exceptions.py -> htbapi-0.1.0/htbapi
+copying htbapi/machines.py -> htbapi-0.1.0/htbapi
+copying htbapi/models.py -> htbapi-0.1.0/htbapi
+copying htbapi/profiles.py -> htbapi-0.1.0/htbapi
+copying htbapi/search.py -> htbapi-0.1.0/htbapi
+copying htbapi/storage.py -> htbapi-0.1.0/htbapi
+copying htbapi/teams.py -> htbapi-0.1.0/htbapi
+copying htbapi/user.py -> htbapi-0.1.0/htbapi
+copying htbapi.egg-info/PKG-INFO -> htbapi-0.1.0/htbapi.egg-info
+copying htbapi.egg-info/SOURCES.txt -> htbapi-0.1.0/htbapi.egg-info
+copying htbapi.egg-info/dependency_links.txt -> htbapi-0.1.0/htbapi.egg-info
+copying htbapi.egg-info/requires.txt -> htbapi-0.1.0/htbapi.egg-info
+copying htbapi.egg-info/top_level.txt -> htbapi-0.1.0/htbapi.egg-info
+Writing htbapi-0.1.0/setup.cfg
+creating '.tox/dist/htbapi-0.1.0.zip' and adding 'htbapi-0.1.0' to it
+adding 'htbapi-0.1.0'
+adding 'htbapi-0.1.0/htbapi.egg-info'
+adding 'htbapi-0.1.0/htbapi'
+adding 'htbapi-0.1.0/PKG-INFO'
+adding 'htbapi-0.1.0/README.md'
+adding 'htbapi-0.1.0/setup.py'
+adding 'htbapi-0.1.0/setup.cfg'
+adding 'htbapi-0.1.0/htbapi.egg-info/PKG-INFO'
+adding 'htbapi-0.1.0/htbapi.egg-info/SOURCES.txt'
+adding 'htbapi-0.1.0/htbapi.egg-info/requires.txt'
+adding 'htbapi-0.1.0/htbapi.egg-info/top_level.txt'
+adding 'htbapi-0.1.0/htbapi.egg-info/dependency_links.txt'
+adding 'htbapi-0.1.0/htbapi/user.py'
+adding 'htbapi-0.1.0/htbapi/models.py'
+adding 'htbapi-0.1.0/htbapi/machines.py'
+adding 'htbapi-0.1.0/htbapi/client.py'
+adding 'htbapi-0.1.0/htbapi/teams.py'
+adding 'htbapi-0.1.0/htbapi/__init__.py'
+adding 'htbapi-0.1.0/htbapi/__version__.py'
+adding 'htbapi-0.1.0/htbapi/storage.py'
+adding 'htbapi-0.1.0/htbapi/search.py'
+adding 'htbapi-0.1.0/htbapi/exceptions.py'
+adding 'htbapi-0.1.0/htbapi/challenges.py'
+adding 'htbapi-0.1.0/htbapi/profiles.py'
+removing 'htbapi-0.1.0' (and everything under it)

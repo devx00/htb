@@ -1,0 +1,396 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to HackTheBox API’s documentation! &#8212; HackTheBox API 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-htbapi">
+<span id="welcome-to-hackthebox-api-s-documentation"></span><h1>Welcome to HackTheBox API’s documentation!<a class="headerlink" href="#module-htbapi" title="Permalink to this headline">¶</a></h1>
+<p>An unofficial library for working with HackTheBox’s API.</p>
+<p>This library provides an easy way to work with the HackTheBox API.
+It supports querying machine info, challenge info, user info, and more.</p>
+<dl class="py function">
+<dt id="htbapi.initialize">
+<code class="sig-prename descclassname">htbapi.</code><code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">email</span></em>, <em class="sig-param"><span class="n">password</span></em>, <em class="sig-param"><span class="n">otp</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi.html#initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the API Client.</p>
+<p>Initialize the client with credentials and optional otp if 2fa is enabled.
+If 2fa is enabled but an otp is not provided, all requests will fail until
+an otp is manually submitted through the client.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The email to authenticate with.</p></li>
+<li><p><strong>password</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The password to authenticate with.</p></li>
+<li><p><strong>otp</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – The 2fa OTP to use is 2fa is enabled.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A tuple containing the access token and refresh token for the session.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="htbapi.restoresession">
+<code class="sig-prename descclassname">htbapi.</code><code class="sig-name descname">restoresession</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accesstoken</span></em>, <em class="sig-param"><span class="n">refreshtoken</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi.html#restoresession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.restoresession" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restores a session with existing accesstoken and refreshtoken.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accesstoken</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The access token from a previous session.</p></li>
+<li><p><strong>refreshtoken</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The refresh token from a previous session.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="htbapi.session">
+<code class="sig-prename descclassname">htbapi.</code><code class="sig-name descname">session</code><a class="headerlink" href="#htbapi.session" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-htbapi.client"></span><p>The main module for sending requests to the API.</p>
+<p>The Client class is the main Session object that is used
+to communicate with the API.
+It is recommended not to use this class directly.
+Instead one sheould use the methods provided in the module
+respective to what object you are working with.</p>
+<p>ie. Use the htb.machines module when working with a Machine</p>
+<p>TODO: Improve exception handling.
+TODO: Make more specific Exception types and messages.</p>
+<dl class="py class">
+<dt id="htbapi.client.Client">
+<em class="property">class </em><code class="sig-prename descclassname">htbapi.client.</code><code class="sig-name descname">Client</code><a class="reference internal" href="_modules/htbapi/client.html#Client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="htbapi.client.Client.accesstoken">
+<em class="property">property </em><code class="sig-name descname">accesstoken</code><a class="headerlink" href="#htbapi.client.Client.accesstoken" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current access token for authentication</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.checkresponse">
+<code class="sig-name descname">checkresponse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.checkresponse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.checkresponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the response for errors and raises an Exception
+when one is found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>HTBRequestException</strong> – If the request contains errors.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">endpoint</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issue a GET request to the endpoint with the query params specified
+using the shared session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>endpoint</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The api endpoint to send request to (ie /user/info).</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The Response object.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>HTBRequestException</strong> – If the request fails.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.isAuthenticated">
+<em class="property">property </em><code class="sig-name descname">isAuthenticated</code><a class="headerlink" href="#htbapi.client.Client.isAuthenticated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that session has an access token and that an OTP is not
+required to proceed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether session is fully authenticated including 2fa if enabled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.login">
+<code class="sig-name descname">login</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">email</span></em>, <em class="sig-param"><span class="n">password</span></em>, <em class="sig-param"><span class="n">ignore2fa</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Login to the HTB API with the given username and password.
+If the user requires 2fa then a HTBFurtherAuthRequired exception
+will be raised unless ignore2fa=True. In that case the user must
+check client.needsOTP and then call submit2fa manually if required.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The user’s email to login with.</p></li>
+<li><p><strong>password</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The user’s password.</p></li>
+<li><p><strong>ignore2fa</strong> – Whether to suppress HTBFurtherAuthRequired.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>HTBFurtherAuthRequired</strong> – If 2FA is enabled and ignore2fa=False.</p></li>
+<li><p><strong>HTBRequestException</strong> – If the request fails.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.logout">
+<code class="sig-name descname">logout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.logout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.logout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the current session out and removes all tokens.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>HTBRequestException</strong> – If the request fails.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.needsOTP">
+<em class="property">property </em><code class="sig-name descname">needsOTP</code><a class="headerlink" href="#htbapi.client.Client.needsOTP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks to see if 2fa is enabled and if it is checks
+whether or not the session token is already authorized with one or not.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether an OTP is required to complete authentication.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.post">
+<code class="sig-name descname">post</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">endpoint</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issue a POST request to the endpoint with the JSON data specified
+and the query params specified using the shared session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>endpoint</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The api endpoint to send request to (ie /user/info).</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The Response object.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>HTBRequestException</strong> – If the request fails.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.refreshsession">
+<code class="sig-name descname">refreshsession</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ignore2fa</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.refreshsession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.refreshsession" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempts to refresh the current session using the provided
+token or a previously cached token.
+If the user requires 2fa then a HTBFurtherAuthRequired exception
+will be raised unless ignore2fa=True. In that case the user must
+check client.needsOTP and then call submit2fa manually if required.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ignore2fa</strong> – Whether to suppress HTBFurtherAuthRequired.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>HTBFurtherAuthRequired</strong> – If 2FA is enabled and ignore2fa=False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.retry">
+<code class="sig-name descname">retry</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.retry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.retry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retries the last request if possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>HTBRequestException</strong> – If the request fails.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.send">
+<code class="sig-name descname">send</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">request</span></em>, <em class="sig-param"><span class="n">store</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.send"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the prepared request that is stored in self._request
+and stores the response in self._response.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>request</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Request</span></code>) – The prepared Request to send.</p></li>
+<li><p><strong>store</strong> – Whether to store the Request for future retry.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The Response object.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>HTBRequestException</strong> – If the request fails.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.submit2fa">
+<code class="sig-name descname">submit2fa</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">code</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.submit2fa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.submit2fa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Submits the 2fa code, or backup code, if the user requires it.
+If the code is 6 digits long it is assumed to be a normal code,
+if it is 20 characters it is assumed to be a backup code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>code</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The OTP generated by authenticator app, or a backup code.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>HTBException</strong> – If the code is invalid.</p></li>
+<li><p><strong>HTBRequestException</strong> – If the request fails.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="htbapi.client.Client.url">
+<em class="property">static </em><code class="sig-name descname">url</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">endpoint</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#Client.url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.Client.url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes an endpoint and returns the full URL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>endpoint</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The relative path to convert.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The full URL for the endpoint</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="htbapi.client.disablesslwarnings">
+<code class="sig-prename descclassname">htbapi.client.</code><code class="sig-name descname">disablesslwarnings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/htbapi/client.html#disablesslwarnings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#htbapi.client.disablesslwarnings" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is just for debugging purposes so I could use Burp</p>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">HackTheBox API</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Zach Hanson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

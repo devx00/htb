@@ -10,6 +10,7 @@ from pprint import pprint
 # Suppress only the single warning from urllib3 needed.
 import htbapi
 from htbapi import profiles
+from htbapi import HTBChallenge
 htbapi.session.proxies = {"https": "https://localhost:8080"}
 htbapi.client.disablesslwarnings()
 htbapi.session.verify = False
@@ -23,9 +24,12 @@ def login():
     otp = input("otp> ")
 
     try:
+        if EMAIL is None or PASSWORD is None:
+            return
         token, refresh = htbapi.initialize(EMAIL, PASSWORD, otp)
         with open(sessionfile, 'w') as f:
             f.write(f"{token}\n{refresh}")
+
     except htbapi.exceptions.HTBRequestException as e:
         print(e, e.response.url)
 
@@ -43,8 +47,10 @@ if not loadsession():
 
 # testinfo = htbapi.session.get("/user/info")
 # users = profiles.findprofiles("parad")
-
-p = profiles.findprofile("badparadox")
-pprint(p.__dict__)
-p.load()
-pprint(p.__dict__)
+c = HTBChallenge({"id": 5})
+print(c.name)
+# p = profiles.findprofile("3nt3r")
+# pprint(p.__dict__)
+# pprint(p.user_owns)
+# p.load()
+# pprint(p.__dict__)

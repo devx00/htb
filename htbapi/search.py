@@ -4,13 +4,13 @@ This module contains methods for searching HTB for various types of elements,
 including Users, Machines, Challenges, and Teams.
 """
 import json
-from htbapi.models import HTBTeam
-from htbapi.models import HTBMachine
-from htbapi.models import HTBChallenge
-from htbapi.models import HTBProfile
-from htbapi.models import HTBObject
+from .profiles import HTBProfile
+from .machines import HTBMachine
+from .challenges import HTBChallenge
+from .teams import HTBTeam
+from .models import HTBObject
 from typing import Dict, List
-from htbapi import session
+from . import session
 
 searchtags = ["users", "machines", "challenges", "teams"]
 objectclasses = {
@@ -40,6 +40,7 @@ def search(term: str, tags=searchtags) -> Dict[str, List[HTBObject]]:
     Raises:
         HTBRequestException: If a request fails.
     """
+
     resp = session.get("/search/fetch", params={"query": term, "tags": json.dumps(tags)})
     results = resp.json()
     # Map the results onto the proper classes according to the name of the keys.

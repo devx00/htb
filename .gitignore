@@ -5,3 +5,5 @@ tests/.*
 build/*
 dist/*
 htbapi.egg-info/*
+htbapi/__pycache__
+tests/testfile.py

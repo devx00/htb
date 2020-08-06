@@ -4,9 +4,16 @@ This module contains classes and methods for working with user profiles
 on HTB.
 """
 
-from typing import List
-from htbapi.models import HTBProfile
-from htbapi.search import search
+from . import session
+from typing import List, Optional
+from .models import HTBObject
+import json
+
+class HTBProfile(HTBObject):
+    """A HTB user's profile."""
+
+    objectendpoint = "/user/profile/basic/"
+    objectkey = "profile"
 
 
 def findprofiles(username: str) -> List[HTBProfile]:
@@ -19,11 +26,16 @@ def findprofiles(username: str) -> List[HTBProfile]:
     Returns:
         A list of matching profiles.
     """
-    searchresults = search(username, tags=["users"])
-    matches = searchresults["users"] if "users" in searchresults else []
+
+    resp = session.get(
+        "/search/fetch", 
+        params={"query": username, "tags": json.dumps(["users"])})
+    results = resp.json()
+    searchresults = results["users"] if "users" in results else []
+    matches = [HTBProfile(prof) for prof in searchresults]
     return matches
 
-def findprofile(username: str) -> HTBProfile:
+def findprofile(username: str) -> Optional[HTBProfile]:
     """Finds a specific profile by username.
 
     Searches HTB for a specific user profile matching the specified username

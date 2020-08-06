@@ -1,16 +1,25 @@
-"""Initializes the package and provides some helper methods.
+"""An unofficial library for working with HackTheBox's API.
 
-This module initializes the htbapi package and provides some helper methods for
-authenticating and restoring sessions, as well as other setup and config tasks.
+This library provides an easy way to work with the HackTheBox API.
+It supports querying machine info, challenge info, user info, and more.
 """
-
-from typing import Tuple
+import logging
+from . import client
+from . import exceptions
 from .client import Client
+from .client import session
+from .challenges import HTBChallenge
+from .machines import HTBMachine
+from .profiles import HTBProfile
+from .teams import HTBTeam
+from typing import Optional, Tuple
 
-session = Client()
+from .__version__ import __title__, __description__, __url__, __version__
+from .__version__ import __build__, __author__, __author_email__, __license__
+from .__version__ import __copyright__
 
 
-def initialize(email: str, password: str, otp: str=None) -> Tuple[str, str]:
+def initialize(email: str, password: str, otp: str=None) -> Tuple[Optional[str], Optional[str]]:
     """Initialize the API Client.
 
     Initialize the client with credentials and optional otp if 2fa is enabled.
@@ -20,7 +29,7 @@ def initialize(email: str, password: str, otp: str=None) -> Tuple[str, str]:
     Args:
         email: The email to authenticate with.
         password: The password to authenticate with.
-        otp: Optional; The 2fa OTP to use is 2fa is enabled.
+        otp: The 2fa OTP to use is 2fa is enabled.
     Returns:
         A tuple containing the access token and refresh token for the session.
     """

@@ -1,0 +1,380 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>htbapi.client &#8212; HackTheBox API 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for htbapi.client</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The main module for sending requests to the API.</span>
+
+<span class="sd">The Client class is the main Session object that is used</span>
+<span class="sd">to communicate with the API.</span>
+<span class="sd">It is recommended not to use this class directly.</span>
+<span class="sd">Instead one sheould use the methods provided in the module</span>
+<span class="sd">respective to what object you are working with.</span>
+
+<span class="sd">ie. Use the htb.machines module when working with a Machine</span>
+
+<span class="sd">TODO: Improve exception handling. </span>
+<span class="sd">TODO: Make more specific Exception types and messages.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">requests</span> <span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">Request</span><span class="p">,</span> <span class="n">Response</span>
+<span class="kn">from</span> <span class="nn">urllib3.exceptions</span> <span class="kn">import</span> <span class="n">InsecureRequestWarning</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+
+<span class="kn">from</span> <span class="nn">htbapi.exceptions</span> <span class="kn">import</span> <span class="n">HTBException</span><span class="p">,</span> <span class="n">HTBRequestException</span><span class="p">,</span> <span class="n">HTBFurtherAuthRequired</span>
+
+<span class="n">BASEURL</span> <span class="o">=</span> <span class="s2">&quot;https://www.hackthebox.eu/api/v4&quot;</span>
+<div class="viewcode-block" id="disablesslwarnings"><a class="viewcode-back" href="../../index.html#htbapi.disablesslwarnings">[docs]</a><span class="k">def</span> <span class="nf">disablesslwarnings</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;This is just for debugging purposes so I could use Burp&quot;&quot;&quot;</span>
+    <span class="n">requests</span><span class="o">.</span><span class="n">packages</span><span class="o">.</span><span class="n">urllib3</span><span class="o">.</span><span class="n">disable_warnings</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">InsecureRequestWarning</span><span class="p">)</span> <span class="c1"># pylint: disable=no-member</span></div>
+
+<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../index.html#htbapi.Client">[docs]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">(</span><span class="n">Session</span><span class="p">):</span>
+<div class="viewcode-block" id="Client.url"><a class="viewcode-back" href="../../index.html#htbapi.Client.url">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">url</span><span class="p">(</span><span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes an endpoint and returns the full URL.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            endpoint: The relative path to convert.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The full URL for the endpoint</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">endpoint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="n">endpoint</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">endpoint</span>
+        <span class="k">return</span> <span class="n">BASEURL</span> <span class="o">+</span> <span class="n">endpoint</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">needsOTP</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks to see if 2fa is enabled and if it is checks </span>
+<span class="sd">        whether or not the session token is already authorized with one or not.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Whether an OTP is required to complete authentication.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is2faEnabled</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenHas2FA</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">isAuthenticated</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks that session has an access token and that an OTP is not</span>
+<span class="sd">        required to proceed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Whether session is fully authenticated including 2fa if enabled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">accesstoken</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">needsOTP</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">accesstoken</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The current access token for authentication&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accesstoken</span>
+
+    <span class="nd">@accesstoken</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">accesstoken</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The setter for accesstoken. Makes sure to change</span>
+<span class="sd">        the Authorization header when a new value is specified</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            new: The new access token to use for auth.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_accesstoken</span> <span class="o">=</span> <span class="n">new</span>
+        <span class="k">if</span> <span class="n">new</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Bearer </span><span class="si">{</span><span class="n">new</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="s2">&quot;Authorization&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a client object. If persist is True then the session token</span>
+<span class="sd">        and refresh token are stored with the storage module.</span>
+<span class="sd">        Note: The storage module also needs to be configured for this to</span>
+<span class="sd">        properly store the session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;User-Agent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Python HTB API&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Accept&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;application/json, text/plain, */*&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accesstoken</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refreshtoken</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is2faEnabled</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenHas2FA</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="Client.send"><a class="viewcode-back" href="../../index.html#htbapi.Client.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sends the prepared request that is stored in self._request</span>
+<span class="sd">        and stores the response in self._response.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request: The prepared Request to send.</span>
+<span class="sd">            store: Whether to store the Request for future retry.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The Response object.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            HTBRequestException: If the request fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">store</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_response</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkresponse</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response</span></div>
+
+<div class="viewcode-block" id="Client.get"><a class="viewcode-back" href="../../index.html#htbapi.Client.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Issue a GET request to the endpoint with the query params specified</span>
+<span class="sd">        using the shared session.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            endpoint: The api endpoint to send request to (ie /user/info).</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The Response object.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            HTBRequestException: If the request fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_request</span><span class="p">(</span>
+            <span class="n">Request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="n">Client</span><span class="o">.</span><span class="n">url</span><span class="p">(</span><span class="n">endpoint</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">req</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client.post"><a class="viewcode-back" href="../../index.html#htbapi.Client.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Issue a POST request to the endpoint with the JSON data specified</span>
+<span class="sd">        and the query params specified using the shared session.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            endpoint: The api endpoint to send request to (ie /user/info).</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The Response object.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            HTBRequestException: If the request fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_request</span><span class="p">(</span>
+            <span class="n">Request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="n">Client</span><span class="o">.</span><span class="n">url</span><span class="p">(</span><span class="n">endpoint</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">req</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client.login"><a class="viewcode-back" href="../../index.html#htbapi.Client.login">[docs]</a>    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ignore2fa</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Login to the HTB API with the given username and password.</span>
+<span class="sd">        If the user requires 2fa then a HTBFurtherAuthRequired exception</span>
+<span class="sd">        will be raised unless ignore2fa=True. In that case the user must</span>
+<span class="sd">        check client.needsOTP and then call submit2fa manually if required.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            email: The user&#39;s email to login with.</span>
+<span class="sd">            password: The user&#39;s password.</span>
+<span class="sd">            ignore2fa: Whether to suppress HTBFurtherAuthRequired.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            HTBFurtherAuthRequired: If 2FA is enabled and ignore2fa=False.</span>
+<span class="sd">            HTBRequestException: If the request fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">Client</span><span class="o">.</span><span class="n">url</span><span class="p">(</span><span class="s2">&quot;/login&quot;</span><span class="p">)</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_request</span><span class="p">(</span>
+            <span class="n">Request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span>
+                    <span class="n">url</span><span class="p">,</span>
+                    <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="n">email</span><span class="p">,</span>
+                        <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="n">password</span><span class="p">,</span>
+                        <span class="s2">&quot;remember&quot;</span><span class="p">:</span> <span class="kc">True</span>
+                    <span class="p">}))</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">body</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accesstoken</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;access_token&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refreshtoken</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;refresh_token&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is2faEnabled</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;is2FAEnabled&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenHas2FA</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore2fa</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">needsOTP</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTBFurtherAuthRequired</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Client.submit2fa"><a class="viewcode-back" href="../../index.html#htbapi.Client.submit2fa">[docs]</a>    <span class="k">def</span> <span class="nf">submit2fa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Submits the 2fa code, or backup code, if the user requires it.</span>
+<span class="sd">        If the code is 6 digits long it is assumed to be a normal code,</span>
+<span class="sd">        if it is 20 characters it is assumed to be a backup code.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            code: The OTP generated by authenticator app, or a backup code.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            HTBException: If the code is invalid.</span>
+<span class="sd">            HTBRequestException: If the request fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">Client</span><span class="o">.</span><span class="n">url</span><span class="p">(</span><span class="s2">&quot;/2fa/login&quot;</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;one_time_password&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="o">==</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">Client</span><span class="o">.</span><span class="n">url</span><span class="p">(</span><span class="s2">&quot;/2fa/login/bypass&quot;</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;backup_code&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTBException</span><span class="p">(</span><span class="s2">&quot;Invalid Two Factor Authorization Code&quot;</span><span class="p">)</span>
+
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_request</span><span class="p">(</span><span class="n">Request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">))</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tokenHas2FA</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Client.refreshsession"><a class="viewcode-back" href="../../index.html#htbapi.Client.refreshsession">[docs]</a>    <span class="k">def</span> <span class="nf">refreshsession</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore2fa</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attempts to refresh the current session using the provided</span>
+<span class="sd">        token or a previously cached token.</span>
+<span class="sd">        If the user requires 2fa then a HTBFurtherAuthRequired exception</span>
+<span class="sd">        will be raised unless ignore2fa=True. In that case the user must</span>
+<span class="sd">        check client.needsOTP and then call submit2fa manually if required.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            ignore2fa: Whether to suppress HTBFurtherAuthRequired.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            HTBFurtherAuthRequired: If 2FA is enabled and ignore2fa=False. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">Client</span><span class="o">.</span><span class="n">url</span><span class="p">(</span><span class="s2">&quot;/login/refresh&quot;</span><span class="p">)</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_request</span><span class="p">(</span>
+            <span class="n">Request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;refresh_token&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">refreshtoken</span><span class="p">}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refreshtoken</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">body</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accesstoken</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;access_token&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refreshtoken</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;refresh_token&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">needsOTP</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTBFurtherAuthRequired</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Client.logout"><a class="viewcode-back" href="../../index.html#htbapi.Client.logout">[docs]</a>    <span class="k">def</span> <span class="nf">logout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logs the current session out and removes all tokens.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            HTBRequestException: If the request fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/logout&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accesstoken</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refreshtoken</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Client.checkresponse"><a class="viewcode-back" href="../../index.html#htbapi.Client.checkresponse">[docs]</a>    <span class="k">def</span> <span class="nf">checkresponse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks the response for errors and raises an Exception</span>
+<span class="sd">        when one is found.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            HTBRequestException: If the request contains errors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&gt;</span> <span class="mi">400</span><span class="p">:</span>
+                <span class="n">exception</span> <span class="o">=</span> <span class="n">HTBRequestException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_response</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">exception</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">401</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">refreshtoken</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">refreshsession</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">retry</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">exception</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s2">&quot;error&quot;</span> <span class="ow">in</span> <span class="n">r</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">HTBException</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTBRequestException</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client.retry"><a class="viewcode-back" href="../../index.html#htbapi.Client.retry">[docs]</a>    <span class="k">def</span> <span class="nf">retry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retries the last request if possible.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            HTBRequestException: If the request fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">HackTheBox API</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  <li><a href="../htbapi.html">htbapi</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Zach Hanson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
