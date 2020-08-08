@@ -12,7 +12,15 @@ import json
 
 
 class HTBTeam(HTBObject):
-    """A team on HTB"""
+    """A team on HTB
+    
+    Attributes:
+        id (int): The teams ID.
+        name (str): The teams name.
+        motto (str): The teams motto.
+        ranking (int): The teams global ranking.
+        avatar (str): The path to the teams avatar image.
+    """
     pass
 
 def findteams(name: str) -> List[HTBTeam]:
